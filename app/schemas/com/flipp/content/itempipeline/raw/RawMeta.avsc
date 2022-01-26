@@ -1,0 +1,341 @@
+{
+  "type": "record",
+  "name": "RawMeta",
+  "namespace": "com.flipp.content.itempipeline.raw",
+  "fields": [
+    {
+      "name": "item_id",
+      "type": "string"
+    },
+    {
+      "name": "merchant_id",
+      "type": "long"
+    },
+    {
+      "name": "item_group_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "sku",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "string"
+    },
+    {
+      "name": "description",
+      "type": "string"
+    },
+    {
+      "name": "link",
+      "type": "string"
+    },
+    {
+      "name": "image_link",
+      "type": "string"
+    },
+    {
+      "name": "additional_image_links",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": []
+    },
+    {
+      "name": "google_category",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "merchant_categories",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "merchant_category",
+          "type": "string",
+          "doc": "General merchant category name."
+        }
+      },
+      "default": [],
+      "doc": "Categories of the merchant item."
+    },
+    {
+      "name": "keywords",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": []
+    },
+    {
+      "name": "average_rating",
+      "type": [
+        "null",
+        "float"
+      ],
+      "default": null
+    },
+    {
+      "name": "brand",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "manufacturer",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "gtin",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "mpn",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "adult",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "multipack",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": null
+    },
+    {
+      "name": "age_group",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "AgeGroup",
+          "symbols": [
+            "NEWBORN",
+            "INFANT",
+            "TODDLER",
+            "KIDS",
+            "ADULT",
+            "FlippAvroDefault"
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "color",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": []
+    },
+    {
+      "name": "gender",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "Gender",
+          "symbols": [
+            "MALE",
+            "FEMALE",
+            "UNISEX",
+            "FlippAvroDefault"
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "material",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": []
+    },
+    {
+      "name": "pattern",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": []
+    },
+    {
+      "name": "size",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "size_type",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "SizeType",
+          "symbols": [
+            "REGULAR",
+            "PETITE",
+            "PLUS",
+            "BIG_AND_TALL",
+            "MATERNITY",
+            "FlippAvroDefault"
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "size_system",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "SizeSystem",
+          "symbols": [
+            "US",
+            "UK",
+            "EU",
+            "DE",
+            "FR",
+            "JP",
+            "CN",
+            "IT",
+            "BR",
+            "MEX",
+            "AU",
+            "FlippAvroDefault"
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "availability",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "Availability",
+          "symbols": [
+            "IN_STOCK",
+            "OUT_OF_STOCK",
+            "FlippAvroDefault"
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "buy_in_store",
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "default": null
+    },
+    {
+      "name": "buy_online",
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "default": null
+    },
+    {
+      "name": "ship_to_home",
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "default": null
+    },
+    {
+      "name": "ship_to_store",
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "default": null
+    },
+    {
+      "name": "pickup_link_template",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "mobile_pickup_link_template",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "link_template",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "mobile_link_template",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "data_source",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "time",
+      "type": "long"
+    }
+  ]
+}

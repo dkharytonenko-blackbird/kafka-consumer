@@ -1,0 +1,37 @@
+<%= content_for :title, 'Home Page' %>
+<%= content_for :description, 'You are home!' %>
+<h1>Welcome to Kafka Consumer!</h1>
+
+<table class="new-default larger-width">
+  <tr>
+    <th>ID</th>
+    <th>Merchant ID</th>
+    <th>SKU</th>
+    <th>Title</th>
+    <th>Description</th>
+    <th>GTIN</th>
+    <th>NPM</th>
+    <th>Brand</th>
+    <th>Manufacturer</th>
+    <th>Created At</th>
+    <th>Updated At</th>
+  </tr>
+  <% @items.each do |item| %>
+  <tr>
+    <td><%= item.id %></td>
+    <td><%= item.merchant_id %></td>
+    <td><%= item.sku %></td>
+    <td><%= item.title.truncate(50) %></td>
+    <td><%= item.description.truncate(80) %></td>
+    <td><%= item.gtin %></td>
+    <td><%= item.mpn %></td>
+    <td><%= item.brand %></td>
+    <td><%= item.manufacturer %></td>
+    <td><%= item.created_at.strftime("%D %T") %></td>
+    <td><%= item.updated_at.strftime("%D %T") %></td>
+  </tr>
+  <% end %>
+</table>
+
+<%= will_paginate @items %>
+

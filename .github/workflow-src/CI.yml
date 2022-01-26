@@ -1,0 +1,163 @@
+_variables_:
+  PROD_BRANCH: main
+  STAGING_BRANCH: develop
+
+on:
+  pull_request:
+  push:
+    branches:
+      - __PROD_BRANCH__
+      - __STAGING_BRANCH__
+  workflow_dispatch:
+    inputs:
+      deploy_staging:
+        description: "Force deploy to staging?"
+        type: boolean
+        required: false
+
+_defaults_:
+  _mysql_:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    env:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+    options: >-
+      --health-cmd="mysqladmin ping"
+      --health-interval=10s
+      --health-timeout=5s
+      --health-retries=3
+  _container_:
+    image: ghcr.io/wishabi/ci-build-environment:ruby-3.0-buster-node
+    credentials:
+      username: ${{ github.repository_owner }}
+      password: ${{ secrets.GHCR_TOKEN }}
+  _cache_:
+    - name: Bundle cache
+      uses: actions/cache@v2
+      with:
+        path: vendor/bundle
+        key: rails-${{ hashFiles('Gemfile.lock') }}
+  _teardown_:
+    - name: Cleanup
+    - run: docker cleanup
+  _setup_:
+    - _cache_
+
+jobs:
+  build:
+    runs-on: [ ubuntu, runner-fleet ]
+    container: _container_
+    steps:
+      - _setup_
+      - name: Bundle install
+        run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle install --jobs=4
+
+  rspec:
+    runs-on: [ubuntu, runner-fleet]
+    needs: build
+    container: _container_
+    services:
+      mysql: _mysql_
+    steps:
+      - _setup_
+      - name: Execute rspec tests
+        run: |
+             bundle exec rails db:create db:migrate
+             bundle exec rspec --format progress --format RspecJunitFormatter -o result/rspec.xml
+        env:
+          RAILS_ENV: test
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+          DB_HOST: mysql
+      - name: 'Upload test results'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.sha }}-test-results
+          path: ./result/rspec.xml
+          retention-days: 1
+
+  lint:
+    runs-on: [ubuntu, runner-fleet]
+    needs: build
+    container: _container_
+    steps:
+      - _setup_
+      - name: Execute rubocop
+        run: bundle exec rubocop
+
+  one-for-all:
+    runs-on: [ubuntu, runner-fleet]
+    needs: [rspec, lint]
+    env:
+      SKIP_TEST_EXEC: true
+    container: _container_
+    steps:
+      - uses: rlespinasse/github-slug-action@v3.x
+      - name: Download test result
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ github.sha }}-test-results
+          path: ./result/
+      - name: execute one-for-all
+        run: |
+          aws s3 cp s3://one-for-all/start-one-for-all.sh start-one-for-all.sh
+          chmod +x ./start-one-for-all.sh
+          ENFORCER_LANGUAGE="ruby" ./start-one-for-all.sh
+        env:
+          CIRCLE_BRANCH: ${{ env.GITHUB_REF_SLUG }}
+          CIRCLE_PROJECT_REPONAME: ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG }}
+
+  deploy-staging:
+    runs-on: [ubuntu, runner-fleet]
+    needs: [rspec, lint, validate-topics, validate-schemas]
+    if: github.ref == 'refs/heads/__STAGING_BRANCH__'  || github.event.inputs.deploy_staging
+    container: _container_
+    steps:
+      - _setup_
+      - name: Deploy to staging
+        run: |
+          ./deploy/staging.sh --only-deploy
+
+  deploy-production:
+    runs-on: [ ubuntu, runner-fleet ]
+    needs: [ rspec, lint]
+    if: github.ref == 'refs/heads/__PROD_BRANCH__'
+    container: _container_
+    steps:
+      - _setup_
+      - name: Deploy to production
+        run: |
+          ./deploy/production.sh --only-deploy
+
+  validate-topics:
+    runs-on: [ubuntu, runner-fleet]
+    needs: build
+    container: _container_
+    steps:
+    - uses: rlespinasse/github-slug-action@v3.x
+    - _setup_
+    - run: |
+        sudo chmod 1777 -R /home/circleci/.bundle && bundle config path 'vendor/bundle'
+        bundle exec rails g flipp_ruby_kafka:topic_validation ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG }}
+        sudo chown circleci:circleci /var/run/docker.sock
+        ./deploy/staging.sh --only-topic-validation
+
+  validate-schemas:
+    runs-on: [ubuntu, runner-fleet]
+    needs: build
+    container: _container_
+    steps:
+    - _setup_
+    - name: generate schema validation json
+      run: |
+        sudo chmod 1777 -R /home/circleci/.bundle && bundle config path 'vendor/bundle'
+        bundle exec rails g flipp_ruby_kafka:schema_validation
+        sudo chown circleci:circleci /var/run/docker.sock
+    - name: run staging schema validation
+      if: github.ref != 'refs/heads/__STAGING_BRANCH__'  || github.event.inputs.deploy_staging
+      run: ./deploy/staging.sh --only-schema-validation
+    - name: run production schema validation
+      if: github.ref == 'refs/heads/__PROD_BRANCH__'
+      run: ./deploy/production.sh --only-schema-validation
