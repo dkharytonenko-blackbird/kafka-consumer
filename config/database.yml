@@ -12,7 +12,7 @@ development: &development
   <<: *default
   database: kafka_consumer_development
   username: <%= ENV['KAFKA_CONSUMER_DB_USERNAME'] || 'root' %>
-  password: 'Kiev4110362'<%= ENV['KAFKA_CONSUMER_DB_PASSWORD'] %>
+  password: <%= ENV['KAFKA_CONSUMER_DB_PASSWORD'] %>
 
 test:
   <<: *development
