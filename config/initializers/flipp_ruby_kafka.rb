@@ -13,6 +13,8 @@ Rails.configuration.to_prepare do
       namespace 'com.flipp.content.itempipeline.raw'
       key_config schema: 'RawNationalKey'
       group_id 'kafka_consumer_merchant_items'
+      # delivery :message
+      # start_from_beginning false
     end
   end
 end
